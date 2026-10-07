@@ -1,0 +1,46 @@
+name: Build WallDecorationsChinese
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Verify reference DLLs
+      run: |
+        ls -la StardewModdingAPI.dll
+        ls -la 0Harmony.dll
+        ls -la SMAPI.Toolkit.CoreInterfaces.dll
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c Release --no-restore
+
+    - name: Prepare package
+      run: |
+        mkdir -p output/WallDecorationsChinese
+        cp bin/Release/net9.0/WallDecorationsChinese.dll output/WallDecorationsChinese/
+        cp manifest.json output/WallDecorationsChinese/
+        cd output && zip -r ../WallDecorationsChinese.zip WallDecorationsChinese
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: WallDecorationsChinese
+        path: WallDecorationsChinese.zip
